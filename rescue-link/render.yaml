@@ -1,0 +1,17 @@
+# Blueprint opcional para Render (también puedes crear el servicio a mano; ver README).
+services:
+  - type: web
+    name: rescuelink-api
+    runtime: python
+    rootDir: backend
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn gateway.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.3
+      - key: EMBED_GRPC_SERVER
+        value: "true"
+      - key: CORS_ORIGINS
+        sync: false # Render te pedirá el valor: la URL de tu frontend en Vercel

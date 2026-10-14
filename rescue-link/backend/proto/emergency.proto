@@ -1,0 +1,88 @@
+syntax = "proto3";
+
+package emergency;
+
+// Contrato del servicio. Cliente y servidor se generan a partir de este archivo.
+service EmergencyService {
+  rpc CreateEmergency(CreateEmergencyRequest) returns (Emergency);
+  rpc ListEmergencies(ListEmergenciesRequest) returns (ListEmergenciesResponse);
+  rpc ListAmbulances(ListAmbulancesRequest) returns (ListAmbulancesResponse);
+  rpc AssignAmbulance(AssignAmbulanceRequest) returns (Emergency);
+  rpc UpdateEmergencyStatus(UpdateEmergencyStatusRequest) returns (Emergency);
+
+  // Server streaming: el servidor mantiene el canal abierto y envía eventos.
+  rpc WatchEmergencies(WatchEmergenciesRequest) returns (stream EmergencyEvent);
+}
+
+enum Priority {
+  PRIORITY_UNSPECIFIED = 0;
+  PRIORITY_LOW = 1;
+  PRIORITY_MEDIUM = 2;
+  PRIORITY_HIGH = 3;
+}
+
+enum Status {
+  STATUS_UNSPECIFIED = 0;
+  STATUS_REPORTED = 1;
+  STATUS_EN_ROUTE = 2;
+  STATUS_IN_CARE = 3;
+  STATUS_FINISHED = 4;
+}
+
+enum EventType {
+  EVENT_TYPE_UNSPECIFIED = 0;
+  EVENT_CONNECTED = 1;
+  EVENT_CREATED = 2;
+  EVENT_UPDATED = 3;
+}
+
+message Emergency {
+  string id = 1;
+  string description = 2;
+  string location = 3;
+  Priority priority = 4;
+  Status status = 5;
+  string ambulance_id = 6; // vacío si aún no tiene ambulancia
+  string created_at = 7;   // fecha ISO 8601 en UTC
+}
+
+message Ambulance {
+  string id = 1;
+  string name = 2;
+  bool available = 3;
+}
+
+message CreateEmergencyRequest {
+  string description = 1;
+  string location = 2;
+  Priority priority = 3;
+}
+
+message ListEmergenciesRequest {}
+
+message ListEmergenciesResponse {
+  repeated Emergency emergencies = 1;
+}
+
+message ListAmbulancesRequest {}
+
+message ListAmbulancesResponse {
+  repeated Ambulance ambulances = 1;
+}
+
+message AssignAmbulanceRequest {
+  string emergency_id = 1;
+  string ambulance_id = 2;
+}
+
+message UpdateEmergencyStatusRequest {
+  string emergency_id = 1;
+  Status status = 2;
+}
+
+message WatchEmergenciesRequest {}
+
+message EmergencyEvent {
+  EventType event_type = 1;
+  Emergency emergency = 2; // no se envía en EVENT_CONNECTED
+}
